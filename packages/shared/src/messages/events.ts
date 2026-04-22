@@ -10,8 +10,8 @@
  * - 一部分保持客户端内部事件（如 reveal:item-shown，用于本地演出细节）
  */
 
-import type { ItemInstance } from '../types/item';
-import type { PhaseType, RevealResult } from '../types/room';
+import type { ItemInstance } from '../types/item.ts';
+import type { PhaseType, RevealResult } from '../types/room.ts';
 
 /** 类型映射表：事件名 → payload 类型。 */
 export interface GameEventMap {

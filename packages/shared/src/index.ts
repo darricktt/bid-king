@@ -17,26 +17,26 @@ export interface HealthCheckPayload {
 }
 
 // ------------ 类型 ------------
-export * from './types/item';
-export * from './types/container';
-export * from './types/player';
-export * from './types/skill';
-export * from './types/room';
+export * from './types/item.ts';
+export * from './types/container.ts';
+export * from './types/player.ts';
+export * from './types/skill.ts';
+export * from './types/room.ts';
 
 // ------------ 状态机 ------------
-export * from './state-machine/phases';
+export * from './state-machine/phases.ts';
 
 // ------------ 常量 ------------
-export * from './constants/errorCodes';
-export * from './constants/gameConstants';
-export * from './constants/skillIds';
+export * from './constants/errorCodes.ts';
+export * from './constants/gameConstants.ts';
+export * from './constants/skillIds.ts';
 
 // ------------ 消息 / 意图 / 事件 ------------
-export * from './messages/intents';
-export * from './messages/events';
+export * from './messages/intents.ts';
+export * from './messages/events.ts';
 
 // ------------ 配置数据 ------------
-export * from './data/items';
-export * from './data/clueTemplates';
-export * from './data/containerTemplates';
-export * from './data/skills';
+export * from './data/items.ts';
+export * from './data/clueTemplates.ts';
+export * from './data/containerTemplates.ts';
+export * from './data/skills.ts';

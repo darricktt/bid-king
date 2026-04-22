@@ -17,7 +17,7 @@
 import { _decorator, Color, Component, Graphics, Label, Node, UITransform, Vec3, view } from 'cc';
 import { SHARED_VERSION } from '@bid-king/shared';
 
-import { logger } from './logger';
+import { logger } from './logger.ts';
 
 const { ccclass } = _decorator;
 

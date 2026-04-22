@@ -5,7 +5,7 @@ import { WebSocketTransport } from '@colyseus/ws-transport';
 import { monitor } from '@colyseus/monitor';
 import { SHARED_VERSION, type HealthCheckPayload } from '@bid-king/shared';
 
-import { logger } from './utils/logger.js';
+import { logger } from './utils/logger.ts';
 
 const PORT = Number(process.env.PORT ?? 2567);
 

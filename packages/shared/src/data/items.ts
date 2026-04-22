@@ -11,7 +11,7 @@
  * 玩家应感受到"多数局微利 / 偶尔大爆 / 偶尔踩坑"的情绪节奏。
  */
 
-import type { ItemDef } from '../types/item';
+import type { ItemDef } from '../types/item.ts';
 
 export const ITEM_DEFS: ItemDef[] = [
   // ------------ common（15 条）------------

@@ -9,9 +9,9 @@
  * - 所有时间戳用 Number（ms），由服务端下发 deadline，客户端本地倒计时。
  */
 
-import type { BidSubmission, BidSubmissionPublicView, PlayerState } from './player';
-import type { ContainerInstance, ContainerPublicView } from './container';
-import type { ItemInstance } from './item';
+import type { BidSubmission, BidSubmissionPublicView, PlayerState } from './player.ts';
+import type { ContainerInstance, ContainerPublicView } from './container.ts';
+import type { ItemInstance } from './item.ts';
 
 /** ------------- Phase 定义 ------------- */
 

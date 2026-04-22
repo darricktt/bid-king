@@ -2,8 +2,8 @@
  * 技能配置（P1 先列出三个，P3 补齐效果实现）。
  */
 
-import { SkillId } from '../constants/skillIds';
-import type { SkillDef } from '../types/skill';
+import { SkillId } from '../constants/skillIds.ts';
+import type { SkillDef } from '../types/skill.ts';
 
 export const SKILL_DEFS: SkillDef[] = [
   {

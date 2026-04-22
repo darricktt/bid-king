@@ -7,7 +7,7 @@
  * - 服务端向客户端广播时必须剥离 amount。
  */
 
-import type { ItemInstance } from './item';
+import type { ItemInstance } from './item.ts';
 
 /** 玩家类型：真人 / AI（3 档难度）。 */
 export type PlayerKind = 'human' | 'ai-conservative' | 'ai-aggressive' | 'ai-trickster';

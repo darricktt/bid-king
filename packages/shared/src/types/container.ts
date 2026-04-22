@@ -9,7 +9,7 @@
  * - ContainerPublicView 是给客户端的"脱敏视图"，不包含 items。
  */
 
-import type { ItemInstance, ItemRarity } from './item';
+import type { ItemInstance, ItemRarity } from './item.ts';
 
 /** 一次掉落条目：在 [min, max] 数量区间内生成某稀有度的物品。 */
 export interface LootEntry {

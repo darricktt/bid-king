@@ -13,8 +13,8 @@
  *     mystery_vault     → 最高方差，legendary 出现概率最高
  */
 
-import { CLUE_BY_ID } from './clueTemplates';
-import type { ContainerTemplate } from '../types/container';
+import { CLUE_BY_ID } from './clueTemplates.ts';
+import type { ContainerTemplate } from '../types/container.ts';
 
 /** 按 ID 列表快速组装模板的线索字段。 */
 const clues = (...ids: string[]) => ids.map((id) => CLUE_BY_ID[id]).filter(Boolean);

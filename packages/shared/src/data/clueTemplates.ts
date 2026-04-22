@@ -5,7 +5,7 @@
  * hintType 决定 UI 展示方式（数量图标 / 材质图标 / 稀有度暗示 / 分类图标）。
  */
 
-import type { ClueDef } from '../types/container';
+import type { ClueDef } from '../types/container.ts';
 
 export const CLUE_TEMPLATES: ClueDef[] = [
   // count：物品数量暗示

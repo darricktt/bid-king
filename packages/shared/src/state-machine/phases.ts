@@ -5,7 +5,7 @@
  * 本文件只放"纯查询 + 常量组合"类的工具。
  */
 
-import { Phase, type PhaseType } from '../types/room';
+import { Phase, type PhaseType } from '../types/room.ts';
 
 /** 每阶段时长（毫秒）。P1 固定，P2 由服务端按配置下发。 */
 export const PHASE_DURATION_MS: Record<PhaseType, number> = {
