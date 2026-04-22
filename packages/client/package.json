@@ -14,5 +14,9 @@
   },
   "devDependencies": {
     "typescript": "~5.5.4"
-  }
+  },
+  "creator": {
+    "version": "3.8.8"
+  },
+  "uuid": "431a4ae9-a3c5-4e9d-9439-f382901df42e"
 }

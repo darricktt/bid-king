@@ -7,10 +7,12 @@
     "lib": ["ES2020", "DOM"],
     "paths": {
       "@bid-king/shared": ["../shared/src/index.ts"],
-      "@bid-king/shared/*": ["../shared/src/*"]
+      "@bid-king/shared/*": ["../shared/src/*"],
+      "cc": ["./temp/declarations/cc"],
+      "cc/env": ["./temp/declarations/cc.env"]
     },
     "rootDirs": ["assets/scripts", "../shared/src"]
   },
-  "include": ["assets/scripts/**/*", "../shared/src/**/*"],
-  "exclude": ["library", "local", "temp", "build", "profiles"]
+  "include": ["assets/scripts/**/*", "../shared/src/**/*", "temp/declarations/**/*.d.ts"],
+  "exclude": ["library", "local", "build", "profiles", "node_modules"]
 }
