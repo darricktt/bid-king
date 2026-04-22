@@ -573,50 +573,171 @@ export const CONTAINER_TEMPLATES: ContainerTemplate[] = [
 
 ---
 
-## 五、UI 层设计
+## 五、UI 层设计（代码优先模式）
 
-### 5.1 场景结构
+### 5.0 设计决定：为什么 UI 全部用代码构建
+
+团队情况：**1-2 人独立开发，其中一人 Cocos Creator 零基础**。在这种背景下，传统"编辑器拖预制体 + Inspector 拖引用"模式会成为协作瓶颈——AI 能写代码，但不能替你点编辑器。
+
+因此 P1 锁定：**UI 全部在 TypeScript 里用 `new Node()` / `addComponent` 的方式构建**，预制体一个都不用。
+
+**对用户（你）的影响**：
+
+| 事情                           | 谁做                           |
+| ------------------------------ | ------------------------------ |
+| 设计 UI 结构、布局、颜色、动效 | AI 写代码                      |
+| 调参、改文案、加交互           | AI 改代码                      |
+| 调试时在 Cocos 里"拖东西"      | **不需要做**                   |
+| 运行看效果                     | 你点 ▶️ 预览按钮               |
+| 美术资源导入（P3 起）          | 你把图拖进 `assets/resources/` |
+
+**项目全周期，你在 Cocos 编辑器里的总动手时间 ≤ 30 分钟。**
+
+### 5.1 场景结构（极简）
+
+Main.scene 的节点树**永远只有固定这几个节点**，不会动态变：
 
 ```
 Main.scene
-├── Canvas
-│   ├── BackgroundLayer
-│   ├── TableLayer
-│   │   ├── PlayerSeat[0..3]       ← 4 个玩家位
-│   │   └── ContainerArea          ← 中央仓库展示区
-│   ├── UILayer
-│   │   ├── CountdownLabel         ← 阶段倒计时
-│   │   ├── PhaseBanner            ← "展示/出价/揭晓/结算"
-│   │   ├── BiddingPanel           ← 出价面板（BIDDING 阶段弹出）
-│   │   ├── RevealPanel            ← 揭晓面板
-│   │   └── SettlementPanel        ← 结算面板
-│   └── DebugPanel                 ← 仅 P1：可手动切阶段、看服务端私有状态
+├── Main Camera（Cocos 默认创建）
+└── Canvas
+    └── Root (挂 Bootstrap.ts)
+        └── [所有 UI 节点由代码动态创建]
 ```
 
-### 5.2 核心组件契约
+`Root` 是整个游戏唯一的挂载入口，Bootstrap 在 `onLoad()` 里启动 `UIManager`，`UIManager` 再用代码构建所有界面、面板、动效。
 
-**所有 UI 组件遵循**：
+### 5.2 UI 架构分层
+
+```
+┌──────────────────────────────────────────────┐
+│  UIManager（单例）                            │
+│  - 管理所有界面的切换（登录/大厅/房间/结算） │
+│  - 订阅 LocalGameEngine 状态                 │
+│  - 按 phase 切 screen                        │
+└──────────────┬───────────────────────────────┘
+               │ owns
+               ▼
+┌──────────────────────────────────────────────┐
+│  Screen（屏幕基类）                           │
+│  - MainScreen / RoomScreen / ResultScreen    │
+│  - show() / hide() / onStateChanged()        │
+│  - 负责组合若干 Widget                        │
+└──────────────┬───────────────────────────────┘
+               │ owns
+               ▼
+┌──────────────────────────────────────────────┐
+│  Widget（界面组件基类）                       │
+│  - PlayerSeat / ContainerCard /              │
+│    BiddingPanel / RevealPanel / Countdown    │
+│  - build(): 返回一个组装好的 cc.Node          │
+│  - update(state): 根据状态刷新               │
+└──────────────┬───────────────────────────────┘
+               │ uses
+               ▼
+┌──────────────────────────────────────────────┐
+│  UIBuilder（工具库）                          │
+│  - ui.node() / ui.label() / ui.button()      │
+│  - ui.sprite() / ui.layout()                 │
+│  - 链式 API，取代 "new Node + addComponent"  │
+└──────────────────────────────────────────────┘
+```
+
+### 5.3 UIBuilder 工具库（P1 第一批代码）
+
+目的：**把 `new Node() + addComponent(UITransform) + addComponent(Label) + label.string = 'xxx' + ...` 的啰嗦代码封装成链式 API**。
+
+示例对比：
+
+**没有 Builder 时（Cocos 原生 API）**：
 
 ```ts
-// 统一的订阅入口
-onLoad() {
-  this.unsub = engine.subscribe((state) => this.onStateChanged(state));
+const node = new Node('title');
+node.addComponent(UITransform).setContentSize(400, 60);
+const label = node.addComponent(Label);
+label.string = '出价';
+label.fontSize = 32;
+label.color = new Color('#ffffff');
+parent.addChild(node);
+```
+
+**用 Builder 后**：
+
+```ts
+ui.label('出价', {
+  size: [400, 60],
+  fontSize: 32,
+  color: '#ffffff',
+  parent,
+});
+```
+
+**Builder 要提供的最小 API 集**（P1 只做这些够用）：
+
+| API                               | 作用                                  |
+| --------------------------------- | ------------------------------------- |
+| `ui.node(name, opts?)`            | 创建空节点 + UITransform              |
+| `ui.label(text, opts?)`           | Label 节点                            |
+| `ui.sprite(spriteFrame, opts?)`   | Sprite 节点（P3 美术期使用）          |
+| `ui.rect(color, opts?)`           | 纯色矩形（P1 用它做占位背景、按钮底） |
+| `ui.button(text, onClick, opts?)` | 可点击按钮                            |
+| `ui.column(children, opts?)`      | 垂直布局容器（内置 Layout 组件）      |
+| `ui.row(children, opts?)`         | 水平布局容器                          |
+| `ui.stack(children, opts?)`       | 层叠（绝对定位）                      |
+
+`opts` 统一支持：`{ parent, pos, size, anchor, color, opacity, name, ... }`。
+
+### 5.4 Screen / Widget 基类
+
+```ts
+// UI 基类抽象
+export abstract class Widget {
+  protected root: Node;
+  protected unsub?: () => void;
+
+  abstract build(parent: Node): Node;
+
+  update(_state: RoomState): void {
+    // 默认空实现，子类按需覆盖
+  }
+
+  destroy(): void {
+    this.unsub?.();
+    this.root?.destroy();
+  }
 }
-onDestroy() {
-  this.unsub?.();
+
+export abstract class Screen {
+  protected widgets: Widget[] = [];
+  abstract show(parent: Node, engine: IGameEngine): void;
+  abstract hide(): void;
+
+  protected bind(engine: IGameEngine): void {
+    // 统一在这里做 engine.subscribe，避免每个 widget 各自订阅
+    const handler = (state: RoomState) => {
+      for (const w of this.widgets) w.update(state);
+    };
+    // 存 unsub ...
+  }
 }
 ```
 
-| 组件                | 订阅字段                                          | 触发行为                                                       |
-| ------------------- | ------------------------------------------------- | -------------------------------------------------------------- |
-| `PlayerSeatView`    | `state.players[id]` + `currentBids[id].submitted` | 更新头像/余额，已出价则加对勾                                  |
-| `ContainerCardView` | `state.currentContainer`                          | 切换仓库时做翻卡动画                                           |
-| `CountdownLabel`    | `state.phaseDeadline`                             | 本地 setInterval 倒计时到 0                                    |
-| `BiddingPanel`      | `state.phase === BIDDING`                         | 显示/隐藏；点确认 → `engine.dispatch({type:'bid/submit',...})` |
-| `RevealPanel`       | `state.lastReveal` 新值                           | 播放揭晓 + 开箱动画序列                                        |
-| `PhaseBanner`       | `state.phase`                                     | 切换阶段时做横幅滑入动画                                       |
+### 5.5 核心 Widget 清单
 
-### 5.3 开箱演出（P1 的核心爽点）
+| Widget                  | 职责                                | 大小预估（行） |
+| ----------------------- | ----------------------------------- | -------------- |
+| `PlayerSeatWidget`      | 显示 1 个玩家的头像/余额/已出价标记 | ~60            |
+| `ContainerCardWidget`   | 显示当前仓库的轮廓、线索、起拍价    | ~80            |
+| `BiddingPanelWidget`    | 出价输入 + 滑块 + 确认按钮          | ~100           |
+| `CountdownLabelWidget`  | 本地倒计时 Label                    | ~40            |
+| `PhaseBannerWidget`     | 阶段切换横幅（带 Tween 动画）       | ~50            |
+| `RevealPanelWidget`     | **开箱演出序列**（核心爽点）        | ~200           |
+| `SettlementPanelWidget` | 结算结果 + 盈亏显示                 | ~60            |
+| `DebugPanelWidget`      | 开发期调试面板（仅 P1）             | ~80            |
+
+**总代码量预估 ~700 行**，全部纯 TypeScript，无需任何编辑器操作。
+
+### 5.6 开箱演出（P1 的核心爽点）
 
 **节奏设计**（REVEALING 阶段 6s）：
 
@@ -624,28 +745,43 @@ onDestroy() {
 | ---------- | -------------------------------- | ------------------------------------------------ |
 | 0.0 - 1.0s | 揭晓出价（卡牌翻转）             | 四张卡同步翻面，胜者高亮                         |
 | 1.0 - 2.0s | 镜头拉近到仓库                   | 缩放 + 阴影抖动                                  |
-| 2.0 - 2.5s | 门打开 / 迷雾涌出                | 粒子 + 雾气 shader                               |
+| 2.0 - 2.5s | 门打开 / 迷雾涌出                | 粒子 + 雾气                                      |
 | 2.5 - 5.5s | 物品逐一显现（按稀有度由低到高） | 每 0.3-0.6s 一件，稀有度越高延迟越长、粒子越夸张 |
 | 5.5 - 6.0s | 结算数字跳动                     | 利润 +/-，绿/红                                  |
 
 **技术实现**：
 
-- **Tween 链**：用 `tween(node).by().to().sequence()` 组合。
-- **粒子**：Cocos `ParticleSystem2D`，三档预设（普通/史诗/传说）。
-- **音效占位**：接口层定义好 `AudioManager.play('reveal.open' | 'reveal.item.legendary')`，P1 加 log，P3/P4 接真实音效。
+- **Tween 链**：`tween(node).by().to().call().start()` 组合。
+- **粒子**：P1 用 `ui.rect` + Tween 模拟简易粒子（纯色小方块飞散），P3 换真实 `ParticleSystem2D`。
+- **音效占位**：接口层定义 `AudioManager.play('reveal.open' | 'reveal.item.legendary')`，P1 加 log，P3/P4 接真实音效。
 
 **关键约定**：**演出是纯客户端行为**，`RevealResult` 一次性下发，客户端自己编排时间线。P2 迁移时服务端不关心演出细节。
 
-### 5.4 调试面板（仅 P1）
+### 5.7 调试面板（仅 P1）
 
-为了加速单机验证，额外做一个 `DebugPanel`（Shift+D 开关）：
+为了加速单机验证，做一个 `DebugPanelWidget`：
 
 - 显示服务端私有状态（container items、实际 value）。
-- 手动切换阶段。
-- 修改 AI 策略。
-- 重置局内状态。
+- 手动切换阶段按钮。
+- 改 AI 策略下拉。
+- 重置局内状态按钮。
+- 通过 `Keyboard D` 或屏幕角落按钮开关。
 
-**必须**：发布构建去除此面板（`DEBUG` 宏或条件编译）。
+**必须**：发布构建去除此面板（用 `DEBUG` 常量包裹）。
+
+### 5.8 与 Cocos 编辑器的最小契约
+
+整个 P1 阶段，你在 Cocos 编辑器里**只做**：
+
+1. ✅ **已完成**：创建 `Main.scene` + 挂载 `Bootstrap.ts` 到 `Canvas/Root` 节点。
+2. **偶尔**：代码改动后点 ▶️ 预览按钮。
+3. **偶尔**：底部状态栏"脚本编译完成"后刷新浏览器。
+
+**不需要做的**：
+
+- ❌ 拖任何预制体
+- ❌ 在 Inspector 里配任何引用
+- ❌ 改任何场景节点结构（全由 Bootstrap 代码创建）
 
 ---
 
