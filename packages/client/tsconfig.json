@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "noEmit": true,
+    "types": [],
+    "lib": ["ES2020", "DOM"],
+    "paths": {
+      "@bid-king/shared": ["../shared/src/index.ts"],
+      "@bid-king/shared/*": ["../shared/src/*"]
+    },
+    "rootDirs": ["assets/scripts", "../shared/src"]
+  },
+  "include": ["assets/scripts/**/*", "../shared/src/**/*"],
+  "exclude": ["library", "local", "temp", "build", "profiles"]
+}

@@ -1,0 +1,13 @@
+node_modules
+dist
+build
+.turbo
+.data
+coverage
+pnpm-lock.yaml
+packages/client/library
+packages/client/local
+packages/client/temp
+packages/client/profiles
+packages/client/build
+packages/client/settings

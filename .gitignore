@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+
+# Local data & env
+.data/
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+
+# Cocos Creator generated
+packages/client/library/
+packages/client/local/
+packages/client/temp/
+packages/client/profiles/
+packages/client/build/
+
+# Turbo
+.turbo/
+
+# Coverage
+coverage/
